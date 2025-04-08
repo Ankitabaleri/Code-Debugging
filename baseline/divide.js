@@ -100,28 +100,88 @@ function divide(prog) {
     }
 }
 
-// Example JavaScript Code
-const prog = `
-function findCharLong(text) {
-    // Write a function to find all words which are at least 4 characters long in a string by using regex.
-    if (text === "") {
-        return [];
-    }
-    const pat = /\\b\\w{4}\\b/;
-    const res = text.match(pat);
-    return res;
-}
-`;
+function divideHeuristically(prog) {
+    const lines = prog.split("\n");
+    const blocks = [];
+    let currentBlock = [];
+    let id = 1;
+    let braceDepth = 0;
 
-const [dividedBlocks, error] = divide(prog);
-if (error) {
-    console.error("Error:", error);
-} else {
-    console.log("Divided Code Blocks:");
-    dividedBlocks.forEach(block => {
-        console.log(`Block ID: ${block.id}`);
-        console.log("Block Code:");
-        console.log(block.code);
-        console.log("-".repeat(50));
-    });
+    const commentBuffer = [];
+    let foundFirstStatement = false;
+
+    const flushBlock = () => {
+        if (currentBlock.length > 0) {
+            blocks.push({ id: id++, code: currentBlock.join("\n") });
+            currentBlock = [];
+        }
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const trimmed = line.trim();
+
+        // Buffer top comments
+        if (!foundFirstStatement && (trimmed === '' || trimmed.startsWith('//'))) {
+            commentBuffer.push(line);
+            continue;
+        }
+
+        // First real code: prepend comment buffer
+        if (!foundFirstStatement) {
+            if (commentBuffer.length > 0) {
+                currentBlock.push(...commentBuffer);
+                commentBuffer.length = 0;
+            }
+            foundFirstStatement = true;
+        }
+
+        currentBlock.push(line);
+
+        // Update brace depth
+        for (const char of trimmed) {
+            if (char === '{') braceDepth++;
+            if (char === '}') braceDepth--;
+        }
+
+        const endsWithSemicolon = trimmed.endsWith(';');
+        const isStandaloneBrace = trimmed === '{' || trimmed === '}';
+        const isControlFlow = /^(if|for|while|switch|else)\b/.test(trimmed);
+        const isReturn = trimmed.startsWith('return');
+        const isBreak = trimmed.startsWith('break');
+        const isContinue = trimmed.startsWith('continue');
+        const isThrow = trimmed.startsWith('throw');
+
+        const nextLine = i + 1 < lines.length ? lines[i + 1].trim() : "";
+
+        const shouldFlush =
+            (braceDepth === 0 && endsWithSemicolon) ||
+            isStandaloneBrace ||
+            isReturn || isBreak || isContinue || isThrow ||
+            (!isControlFlow && braceDepth === 0 && nextLine === "");
+
+        if (shouldFlush) {
+            flushBlock();
+        }
+    }
+
+    flushBlock();
+
+    return blocks;
 }
+
+const fs = require('fs');
+let input = '';
+
+process.stdin.setEncoding('utf8');
+process.stdin.on('data', chunk => input += chunk);
+process.stdin.on('end', () => {
+    const [blocks, error] = divide(input);
+    if (error) {
+        // fallback to heuristic if needed
+        const fallbackBlocks = divideHeuristically(input);
+        console.log(JSON.stringify(fallbackBlocks));
+    } else {
+        console.log(JSON.stringify(blocks));
+    }
+});
