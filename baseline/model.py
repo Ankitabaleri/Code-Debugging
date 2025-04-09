@@ -1,7 +1,7 @@
 import requests
 
 class StarcoderAPIClient:
-    def __init__(self, api_url="http://127.0.0.1:8080/v1/completions"):
+    def __init__(self, api_url="http://127.0.0.1:8000/v1/completions"):
         self.api_url = api_url
 
     def generate_completion(self, prompt, max_tokens=1024, temperature=0.0):

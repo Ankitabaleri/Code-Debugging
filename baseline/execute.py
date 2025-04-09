@@ -41,8 +41,9 @@ correct = 0
 total = 0
 
 with open(file_path, "r") as file:
-    common_prompt = "This is a buggy code. Fix this javascript code. Add necessary imports. Only give the code and not any text"
+    common_prompt = "This is a buggy javascript code. Fix this and give the right javascript code. Add necessary imports. Only give the code and not any text. Do not append any testcases to it as I would be adding custom testcases by myself to call a function."
     results = []
+    os.makedirs("output_baseline", exist_ok=True)
     for i, line in enumerate(file):
         total += 1
         try:
@@ -64,7 +65,7 @@ with open(file_path, "r") as file:
             passed = False
 
             logging.info(f"\n--- Running test #{i+1} ---")
-            if run_js_with_tests(buggy_code, hidden_tests):
+            if run_js_with_tests(generated_code, hidden_tests):
                 correct += 1
                 passed = True
 
