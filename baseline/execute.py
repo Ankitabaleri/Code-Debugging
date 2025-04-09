@@ -7,7 +7,7 @@ from model import StarcoderAPIClient
 
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(message)s', 
-                    handlers=[logging.FileHandler('test_log.log', mode='w'), logging.StreamHandler()])
+                    handlers=[logging.FileHandler('debug_log.log', mode='w'), logging.StreamHandler()])
 
 def run_js_with_tests(js_function_code: str, test_list: list[str]) -> bool:
     file_name = "temp_script.js"
