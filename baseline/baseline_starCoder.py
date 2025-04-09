@@ -74,7 +74,7 @@ def run_js_with_tests(js_function_code, test_list):
             os.remove(file_name)
 
 # ------------ Helper to split code into blocks ----------------
-def split_into_blocks(js_code):
+'''def split_into_blocks(js_code):
     blocks = []
     current_block = []
     open_braces = 0
@@ -90,7 +90,7 @@ def split_into_blocks(js_code):
             current_block = []
     if current_block:
         blocks.append("\n".join(current_block))
-    return blocks
+    return blocks'''
 
 # ------------ Load dataset ----------------
 

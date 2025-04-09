@@ -1,0 +1,2 @@
+2025-04-09 10:39:08,977 - Starting new HTTPS connection (1): huggingface.co:443
+2025-04-09 10:39:09,090 - https://huggingface.co:443 "HEAD /bigcode/starcoder/resolve/main/config.json HTTP/11" 200 0
