@@ -41,11 +41,13 @@ correct = 0
 total = 0
 
 with open(file_path, "r") as file:
-    common_prompt = "This is a buggy javascript code. Fix this and give the right javascript code. Add necessary imports. Only give the code and not any text. Do not append any testcases to it as I would be adding custom testcases by myself to call a function."
+    common_prompt = "This is a buggy javascript code. Fix this and give the right javascript code. Add necessary imports. Only give the Javascript code and not any text and testcases."
     results = []
     os.makedirs("output_baseline", exist_ok=True)
+    count = 0
     for i, line in enumerate(file):
         total += 1
+        count+=1
         try:
             item = json.loads(line)
             buggy_code = item.get("buggy_code", "")
@@ -54,12 +56,21 @@ with open(file_path, "r") as file:
             client = StarcoderAPIClient()
     
             # Define your code prompt
-            prompt_code = common_prompt + '\n\n' + prompt + '\n' + buggy_code
-            generated_code = client.generate_completion(prompt_code)
+            #prompt_code = '/*'+common_prompt + '\n\n' + prompt +'*/\n' + buggy_code
+            prompt_code = """// File: fix_bug.js
+// Task: This is a buggy javascript code. Fix this and give the right javascript code. Add necessary imports. Only give the Javascript code and not any text and testcases.
+// Description: {}
 
-            # Taking around 70% of testcase as hidden
+{}
+
+// Fixed version:""".format(prompt.strip(), buggy_code.strip())
+            logging.info(prompt_code)
+            generated_code = client.generate_completion(prompt_code)
+            logging.info(generated_code)
+
+            # Taking around 50% of testcase as hidden
             total_tests = len(test_list)
-            start_index = math.floor(total_tests * 0.3)
+            start_index = math.floor(total_tests * 0.5)
             hidden_tests = test_list[start_index:]
 
             passed = False
@@ -78,7 +89,6 @@ with open(file_path, "r") as file:
                 }
             results.append(result)
             
-            break
         except json.JSONDecodeError:
             logging.error(f"Error decoding JSON at line {i+1}")
     output_path = os.path.join("output_baseline", "debug_results.jsonl")
