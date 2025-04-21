@@ -2,8 +2,11 @@ import json
 import subprocess
 
 def divide_buggy_code(js_code: str):
+    """
+    Divides buggy JS code into approximate control-flow blocks using a Node.js script.
+    """
     process = subprocess.Popen(
-        ['node', 'divide.js'],
+        ['node', 'divide.js'],  # purely heuristic-based script
         stdin=subprocess.PIPE,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE
@@ -28,6 +31,8 @@ def divide_buggy_code(js_code: str):
             print("[JSON Decode Error]", str(e))
             return None, f"JSON parse error: {e}"
 
+
+# Example usage for a file with buggy JS code
 file_path = "../mbpp_js_cleaned_3.jsonl"
 
 with open(file_path, "r", encoding="utf-8") as f:
